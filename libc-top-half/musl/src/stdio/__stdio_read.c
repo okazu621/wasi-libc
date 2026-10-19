@@ -7,6 +7,13 @@
 
 size_t __stdio_read(FILE *f, unsigned char *buf, size_t len)
 {
+	// 標準入力(fd: 0)から実際にデータを読み込む直前に stdout をフラッシュする
+	// ロックによるデッドロックを防ぐため fflush_unlocked を使用
+	if ((f == stdin || f->fd == 0) && stdout)
+	{
+		fflush_unlocked(stdout);
+	}
+
 	struct iovec iov[2] = {
 		{ .iov_base = buf, .iov_len = len - !!f->buf_size },
 		{ .iov_base = f->buf, .iov_len = f->buf_size }
